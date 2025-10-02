@@ -1,2 +1,2 @@
-# csintsy_mco2_pinoybot
+# csintsy-mco2-pinoybot
 Repo for CSINTSY MCO2 PinoyBot
