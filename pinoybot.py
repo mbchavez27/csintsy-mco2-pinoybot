@@ -10,7 +10,15 @@ Model training and feature extraction should be implemented in a separate script
 
 import os
 import pickle
+import sys
 from typing import List
+import numpy as np
+import pandas as pd
+from sentence_transformers import SentenceTransformer
+
+
+MODEL_PATH = "random_forest_model.pkl"
+
 
 # Main tagging function
 def tag_language(tokens: List[str]) -> List[str]:
@@ -41,11 +49,34 @@ def tag_language(tokens: List[str]) -> List[str]:
     # the tag_language function is retained and correctly accomplishes the expected task.
 
     # Currently, the bot just tags every token as FIL. Replace this with your more intelligent predictions.
-    return ['FIL' for i in tokens]
+    if not os.path.exists(MODEL_PATH):
+        raise FileNotFoundError(
+            f"Model file not found at {MODEL_PATH}. Please train the model first."
+        )
+
+    with open(MODEL_PATH, "rb") as f:
+        model = pickle.load(f)
+
+    embedder = SentenceTransformer("all-MiniLM-L6-v2")
+
+    embeddings = np.vstack(embedder.encode([str(t) for t in tokens]))
+
+    predicted = model.predict(embeddings)
+
+    tags = [str(tag) for tag in predicted]
+
+    return tags
+
 
 if __name__ == "__main__":
-    # Example usage
-    example_tokens = ["Love", "kita", "."]
-    print("Tokens:", example_tokens)
-    tags = tag_language(example_tokens)
+    if len(sys.argv) > 1:
+        sentence = sys.argv[1]
+    else:
+        sentence = input("Enter a sentence: ")
+    print("-----")
+
+    tokens = sentence.split()
+    tags = tag_language(tokens)
+    print("Tokens:", tokens)
+    print("-----")
     print("Tags:", tags)
