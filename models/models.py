@@ -5,9 +5,11 @@ import pandas as pd
 from typing import List
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.decomposition import PCA
 from sentence_transformers import SentenceTransformer
 
 MODEL_PATH = "random_forest_model.pkl"
+PCA_PATH = "pca.pkl"
 
 
 def train_language_model(data: str = "data/final_annotations.csv"):
@@ -23,8 +25,10 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     )  # converts to string even as numberes
 
     print("Generating embeddings...")
-    model = SentenceTransformer("all-MiniLM-L6-v2")
-    language["embeddings"] = list(model.encode(language["word"].tolist()))
+    model = SentenceTransformer("all-mpnet-base-v2")
+    language["embeddings"] = list(
+        model.encode(language["word"].tolist(), convert_to_tensor=False)
+    )
 
     X = np.vstack(language["embeddings"])
     y = language["label"]
@@ -39,14 +43,24 @@ def train_language_model(data: str = "data/final_annotations.csv"):
         X_temp, y_temp, test_size=0.50, random_state=42, stratify=y_temp
     )
 
+    print("Apply PCA...")
+    pca = PCA(n_components=0.95, random_state=42)
+    X_train = pca.fit_transform(X_train)
+    X_val = pca.transform(X_val)
+    X_test = pca.transform(X_test)
+
     print("Training Random Forest model...")
     clf = RandomForestClassifier(n_estimators=300, random_state=42)
     clf.fit(X_train, y_train)
 
-    # Save Model
+    # Save Model and PCA
+    with open(PCA_PATH, "wb") as f:
+        pickle.dump(pca, f)
+
     with open(MODEL_PATH, "wb") as f:
         pickle.dump(clf, f)
 
+    print("PCA saved to", PCA_PATH)
     print("Model trained and saved to", MODEL_PATH)
 
 

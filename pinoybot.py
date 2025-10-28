@@ -18,6 +18,7 @@ from sentence_transformers import SentenceTransformer
 
 
 MODEL_PATH = "random_forest_model.pkl"
+PCA_PATH = "pca.pkl"
 
 
 # Main tagging function
@@ -34,18 +35,23 @@ def tag_language(tokens: List[str]) -> List[str]:
             f"Model file not found at {MODEL_PATH}. Please train the model first."
         )
 
+    # Load model and PCA
     with open(MODEL_PATH, "rb") as f:
         model = pickle.load(f)
+    with open("pca.pkl", "rb") as f:
+        pca = pickle.load(f)
 
-    embedder = SentenceTransformer("all-MiniLM-L6-v2")
-
+    # Generate embeddings for input tokens
+    embedder = SentenceTransformer("all-mpnet-base-v2")
     embeddings = np.vstack(embedder.encode([str(t) for t in tokens]))
 
+    # Apply PCA transformation
+    embeddings = pca.transform(embeddings)
+
+    # Predict tags
     predicted = model.predict(embeddings)
 
-    tags = [str(tag) for tag in predicted]
-
-    return tags
+    return [str(tag) for tag in predicted]
 
 
 if __name__ == "__main__":
