@@ -19,14 +19,14 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     Trains the RandomForest language classifier and saves it as a pickle file.
     """
 
-    print("Loading dataset")
+    print("Loading dataset\n")
     language = pd.read_csv(data)  # loads csv
 
     language["word"] = language["word"].astype(
         str
     )  # converts to string even as numberes
 
-    print("Generating embeddings...")
+    print("Generating embeddings...\n")
     model = SentenceTransformer("all-mpnet-base-v2")
     language["embeddings"] = list(
         model.encode(
@@ -37,7 +37,7 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     X = np.vstack(language["embeddings"])
     y = language["label"]
 
-    print("Splitting dataset...")
+    print("Splitting dataset...\n")
     # 70% train, 15% val, 15% test
     X_train, X_temp, y_train, y_temp = train_test_split(
         X, y, test_size=0.30, random_state=42, stratify=y
@@ -47,22 +47,22 @@ def train_language_model(data: str = "data/final_annotations.csv"):
         X_temp, y_temp, test_size=0.50, random_state=42, stratify=y_temp
     )
 
-    print("Apply PCA...")
+    print("Apply PCA...\n")
     pca = PCA(n_components=0.95, random_state=42)
     X_train = pca.fit_transform(X_train)
     X_val = pca.transform(X_val)
     X_test = pca.transform(X_test)
 
-    print(f"PCA retained {np.sum(pca.explained_variance_ratio_):.2%} of variance")
+    print(f"PCA retained {np.sum(pca.explained_variance_ratio_):.2%} of variance\n")
 
-    print("Training Random Forest model...")
+    print("Training Random Forest model...\n")
     clf = RandomForestClassifier(n_estimators=300, random_state=42, verbose=1)
     clf.fit(X_train, y_train)
 
     # Evaluate Model
-    print("Evaluating model...")
+    print("Evaluating model...\n")
     y_val_pred = clf.predict(X_val)
-    print("Validation Performance:")
+    print("Validation Performance:\n")
     print(classification_report(y_val, y_val_pred))
 
     y_test_pred = clf.predict(X_test)
@@ -77,8 +77,8 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     with open(MODEL_PATH, "wb") as f:
         pickle.dump(clf, f)
 
-    print("PCA saved to", PCA_PATH)
-    print("Model trained and saved to", MODEL_PATH)
+    print("\nPCA saved to", PCA_PATH)
+    print("\nModel trained and saved to", MODEL_PATH)
 
 
 if __name__ == "__main__":
