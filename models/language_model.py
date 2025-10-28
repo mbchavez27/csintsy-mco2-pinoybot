@@ -32,6 +32,8 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     )
 
     print("Getting is named entity feature...\n")
+    language["is_ne"] = language["is_ne"].fillna("NONE")
+    is_ne = pd.get_dummies(language["is_ne"], prefix="is_ne")
 
     print("Generating embeddings...\n")
     model = SentenceTransformer("all-mpnet-base-v2")
@@ -43,7 +45,8 @@ def train_language_model(data: str = "data/final_annotations.csv"):
 
     print("Splitting dataset...\n")
 
-    X = np.hstack([np.vstack(language["embeddings"]), is_spelling_correct])
+    X = np.hstack([np.vstack(language["embeddings"])])
+    # X = np.hstack([np.vstack(language["embeddings"]), is_spelling_correct, is_ne.values])
     y = language["label"]
 
     # 70% train, 15% val, 15% test

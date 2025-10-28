@@ -49,9 +49,9 @@ def tag_language(tokens: List[str]) -> List[str]:
     for token in tokens:
         embedding = embedder.encode([str(token)])[0]
 
-        is_spelling = 1  # 1 Placeholder for spelling correctness feature
+        # is_spelling = 1  # 1 Placeholder for spelling correctness feature
 
-        combined = np.hstack([embedding, [is_spelling]])
+        combined = np.hstack([embedding])
         features.append(combined)
 
     # Stack all token feature vectors
