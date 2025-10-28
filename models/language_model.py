@@ -7,9 +7,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.decomposition import PCA
 from sentence_transformers import SentenceTransformer
+from sklearn.metrics import classification_report, accuracy_score
+from tqdm import tqdm
 
-MODEL_PATH = "random_forest_model.pkl"
-PCA_PATH = "pca.pkl"
+MODEL_PATH = "models/language_rf.pkl"
+PCA_PATH = "models/language_pca.pkl"
 
 
 def train_language_model(data: str = "data/final_annotations.csv"):
@@ -27,7 +29,9 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     print("Generating embeddings...")
     model = SentenceTransformer("all-mpnet-base-v2")
     language["embeddings"] = list(
-        model.encode(language["word"].tolist(), convert_to_tensor=False)
+        model.encode(
+            language["word"].tolist(), convert_to_tensor=False, show_progress_bar=True
+        )
     )
 
     X = np.vstack(language["embeddings"])
@@ -49,9 +53,22 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     X_val = pca.transform(X_val)
     X_test = pca.transform(X_test)
 
+    print(f"PCA retained {np.sum(pca.explained_variance_ratio_):.2%} of variance")
+
     print("Training Random Forest model...")
-    clf = RandomForestClassifier(n_estimators=300, random_state=42)
+    clf = RandomForestClassifier(n_estimators=300, random_state=42, verbose=1)
     clf.fit(X_train, y_train)
+
+    # Evaluate Model
+    print("Evaluating model...")
+    y_val_pred = clf.predict(X_val)
+    print("Validation Performance:")
+    print(classification_report(y_val, y_val_pred))
+
+    y_test_pred = clf.predict(X_test)
+    print("\nTest Performance:")
+    print(classification_report(y_test, y_test_pred))
+    print(f"Test Accuracy: {accuracy_score(y_test, y_test_pred):.4f}")
 
     # Save Model and PCA
     with open(PCA_PATH, "wb") as f:

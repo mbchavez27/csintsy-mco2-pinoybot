@@ -17,8 +17,8 @@ import pandas as pd
 from sentence_transformers import SentenceTransformer
 
 
-MODEL_PATH = "random_forest_model.pkl"
-PCA_PATH = "pca.pkl"
+MODEL_PATH = "models/language_rf.pkl"
+PCA_PATH = "models/language_pca.pkl"
 
 
 # Main tagging function
