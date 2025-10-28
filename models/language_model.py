@@ -26,6 +26,13 @@ def train_language_model(data: str = "data/final_annotations.csv"):
         str
     )  # converts to string even as numberes
 
+    print("Getting spelling correctness feature...\n")
+    is_spelling_correct = (
+        language["is_spelling_correct"].astype(int).to_numpy().reshape(-1, 1)
+    )
+
+    print("Getting is named entity feature...\n")
+
     print("Generating embeddings...\n")
     model = SentenceTransformer("all-mpnet-base-v2")
     language["embeddings"] = list(
@@ -34,10 +41,11 @@ def train_language_model(data: str = "data/final_annotations.csv"):
         )
     )
 
-    X = np.vstack(language["embeddings"])
+    print("Splitting dataset...\n")
+
+    X = np.hstack([np.vstack(language["embeddings"]), is_spelling_correct])
     y = language["label"]
 
-    print("Splitting dataset...\n")
     # 70% train, 15% val, 15% test
     X_train, X_temp, y_train, y_temp = train_test_split(
         X, y, test_size=0.30, random_state=42, stratify=y
