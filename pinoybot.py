@@ -43,13 +43,25 @@ def tag_language(tokens: List[str]) -> List[str]:
 
     # Generate embeddings for input tokens
     embedder = SentenceTransformer("all-mpnet-base-v2")
-    embeddings = np.vstack(embedder.encode([str(t) for t in tokens]))
 
-    # Apply PCA transformation
-    embeddings = pca.transform(embeddings)
+    features = []
+
+    for token in tokens:
+        embedding = embedder.encode([str(token)])[0]
+
+        is_spelling = 1  # 1 Placeholder for spelling correctness feature
+
+        combined = np.hstack([embedding, [is_spelling]])
+        features.append(combined)
+
+    # Stack all token feature vectors
+    X = np.vstack(features)
+
+    # Apply PCA
+    X = pca.transform(X)
 
     # Predict tags
-    predicted = model.predict(embeddings)
+    predicted = model.predict(X)
 
     return [str(tag) for tag in predicted]
 
@@ -59,10 +71,12 @@ if __name__ == "__main__":
         sentence = sys.argv[1]
     else:
         sentence = input("Enter a sentence: ")
-    print("-----")
+    print("\n-----\n")
 
     tokens = sentence.split()
     tags = tag_language(tokens)
+    print("\n-----\n")
     print("Tokens:", tokens)
-    print("-----")
+    print("\n-----\n")
     print("Tags:", tags)
+    print("\n-----\n")
