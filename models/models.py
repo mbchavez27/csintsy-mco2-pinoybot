@@ -16,9 +16,11 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     """
 
     print("Loading dataset")
-    language = pd.read_csv(data)
+    language = pd.read_csv(data)  # loads csv
 
-    language["word"] = language["word"].astype(str)
+    language["word"] = language["word"].astype(
+        str
+    )  # converts to string even as numberes
 
     print("Generating embeddings...")
     model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -28,9 +30,11 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     y = language["label"]
 
     print("Splitting dataset...")
+    # 70% train, 15% val, 15% test
     X_train, X_temp, y_train, y_temp = train_test_split(
         X, y, test_size=0.30, random_state=42, stratify=y
     )
+
     X_val, X_test, y_val, y_test = train_test_split(
         X_temp, y_temp, test_size=0.50, random_state=42, stratify=y_temp
     )
