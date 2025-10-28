@@ -38,7 +38,7 @@ def tag_language(tokens: List[str]) -> List[str]:
     # Load model and PCA
     with open(MODEL_PATH, "rb") as f:
         model = pickle.load(f)
-    with open("pca.pkl", "rb") as f:
+    with open(PCA_PATH, "rb") as f:
         pca = pickle.load(f)
 
     # Generate embeddings for input tokens
