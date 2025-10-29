@@ -15,6 +15,8 @@ from typing import List
 import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer
+import nltk
+from nltk import word_tokenize
 
 
 MODEL_PATH = "models/language_rf.pkl"
@@ -67,13 +69,18 @@ def tag_language(tokens: List[str]) -> List[str]:
 
 
 if __name__ == "__main__":
+    # Download NLTK resources
+    nltk.download("punkt")
+    nltk.download("punkt_tab")
+
     if len(sys.argv) > 1:
         sentence = sys.argv[1]
     else:
         sentence = input("Enter a sentence: ")
+
     print("\n-----\n")
 
-    tokens = sentence.split()
+    tokens = word_tokenize(sentence)
     tags = tag_language(tokens)
     print("\n-----\n")
     print("Tokens:", tokens)
