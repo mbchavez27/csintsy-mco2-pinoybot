@@ -17,6 +17,8 @@ import pandas as pd
 from sentence_transformers import SentenceTransformer
 import nltk
 from nltk import word_tokenize
+import spacy
+import re
 
 
 MODEL_PATH = "models/language_rf.pkl"
@@ -33,14 +35,33 @@ def classify_if_is_ne(token: str) -> str:
     """
 
 
-def classify_if_is_spelling_correct(token: str) -> int:
+def classify_if_is_ne(token: str) -> str:
     """
-    Classifies if a token is spelled correctly.
+    Classifies if a token is a named entity.
     Args:
         token: The word token (string).
     Returns:
-        is_correct: 1 if spelled correctly, 0 otherwise.
+        "ABB_NE" -> abbreviation named entity
+        "NE" -> named entity
+        "NONE" -> neither
+        "EXPR" -> expression
     """
+    name_checker = spacy.load("xx_ent_wiki_sm")
+    abbr_pattern = r"^([A-Z0-9]\.?)+$"
+
+    doc = name_checker(token)
+
+    is_ne = bool(doc[0].ent_type_)
+    is_abbr = bool(re.match(abbr_pattern, token))
+
+    if is_ne and is_abbr:
+        return "ABB_NE"
+    elif is_ne:
+        return "NE"
+    elif is_abbr:
+        return "ABB"
+    else:
+        return "NONE"
 
 
 # Main tagging function
@@ -67,14 +88,22 @@ def tag_language(tokens: List[str]) -> List[str]:
     embedder = SentenceTransformer("all-mpnet-base-v2")
 
     features = []
+    ne_categories = ["ABB", "ABB_EXPR", "ABB_NE", "EXPR", "NE", "NONE"]
 
     for token in tokens:
-        embedding = embedder.encode([str(token)])[0]
+        embedding = embedder.encode([str(token)])[0].reshape(1, -1)
 
-        is_spelling = classify_if_is_spelling_correct(token)
-        is_ne = classify_if_is_ne(token)
+        # classify if token is a Named Entity
+        ne_token = classify_if_is_ne(token)
 
-        combined = np.hstack([embedding])
+        # Create one-hot encoding for NE feature
+        is_ne_onehot = np.zeros((1, len(ne_categories)))
+        if ne_token in ne_categories:
+            is_ne_onehot[0, ne_categories.index(ne_token)] = 1
+
+        # is_spelling = classify_if_is_spelling_correct(token)
+
+        combined = np.hstack([embedding, is_ne_onehot])
         features.append(combined)
 
     # Stack all token feature vectors
