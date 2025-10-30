@@ -25,3 +25,33 @@ The dataset was annotated and validated manually by students using preliminary L
 - **Abb** – Abbreviations
 - **Expr** – Onomatopoeic expressions
 - **Unk** – Unknown or ambiguous words
+
+## How to run
+
+Git Clone the csintsy-mco2-pinoybot repository
+
+```
+git@github.com:mbchavez27/csintsy-mco2-pinoybot.git
+
+```
+
+Execute the following commands to install the dependencies
+
+```
+python -m venv venv       # create their own virtualenv
+source venv/bin/activate  # activate it (Linux/macOS)
+venv\Scripts\activate     # activate it (Windows)
+pip install -r requirements.txt
+```
+
+Run the model first
+
+```
+python models/language_rf_model.py
+```
+
+Run the pinoybot
+
+```
+python pinoybot.py
+```
