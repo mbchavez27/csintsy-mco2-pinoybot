@@ -32,7 +32,6 @@ Git Clone the csintsy-mco2-pinoybot repository
 
 ```
 git@github.com:mbchavez27/csintsy-mco2-pinoybot.git
-
 ```
 
 Execute the following commands to install the dependencies
