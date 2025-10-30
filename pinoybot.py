@@ -23,6 +23,26 @@ MODEL_PATH = "models/language_rf.pkl"
 PCA_PATH = "models/language_pca.pkl"
 
 
+def classify_if_is_ne(token: str) -> str:
+    """
+    Classifies if a token is a named entity.
+    Args:
+        token: The word token (string).
+    Returns:
+        ne_tag: Named entity tag as a string.
+    """
+
+
+def classify_if_is_spelling_correct(token: str) -> int:
+    """
+    Classifies if a token is spelled correctly.
+    Args:
+        token: The word token (string).
+    Returns:
+        is_correct: 1 if spelled correctly, 0 otherwise.
+    """
+
+
 # Main tagging function
 def tag_language(tokens: List[str]) -> List[str]:
     """
@@ -51,7 +71,8 @@ def tag_language(tokens: List[str]) -> List[str]:
     for token in tokens:
         embedding = embedder.encode([str(token)])[0]
 
-        # is_spelling = 1  # 1 Placeholder for spelling correctness feature
+        is_spelling = classify_if_is_spelling_correct(token)
+        is_ne = classify_if_is_ne(token)
 
         combined = np.hstack([embedding])
         features.append(combined)
