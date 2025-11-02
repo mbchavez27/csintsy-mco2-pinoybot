@@ -25,14 +25,7 @@ MODEL_PATH = "models/language_rf.pkl"
 PCA_PATH = "models/language_pca.pkl"
 
 
-def classify_if_is_ne(token: str) -> str:
-    """
-    Classifies if a token is a named entity.
-    Args:
-        token: The word token (string).
-    Returns:
-        ne_tag: Named entity tag as a string.
-    """
+name_checker = spacy.load("xx_ent_wiki_sm")
 
 
 def classify_if_is_ne(token: str) -> str:
@@ -46,7 +39,6 @@ def classify_if_is_ne(token: str) -> str:
         "NONE" -> neither
         "EXPR" -> expression
     """
-    name_checker = spacy.load("xx_ent_wiki_sm")
     abbr_pattern = r"^([A-Z0-9]\.?)+$"
 
     doc = name_checker(token)
@@ -121,7 +113,6 @@ def tag_language(tokens: List[str]) -> List[str]:
 if __name__ == "__main__":
     # Download NLTK resources
     nltk.download("punkt")
-    nltk.download("punkt_tab")
 
     if len(sys.argv) > 1:
         sentence = sys.argv[1]
