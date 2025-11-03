@@ -79,10 +79,6 @@ def tag_language(tokens: List[str]) -> List[str]:
     # Generate Embeddings
     embedder = SentenceTransformer("all-mpnet-base-v2")
 
-    # Join Sentence Tokens
-    sentence = " ".join(tokens)
-    sentence_embedding = embedder.encode([sentence])[0]
-
     # Setup Named Entity Categories
     ne_categories = ["ABB", "ABB_EXPR", "ABB_NE", "EXPR", "NE", "NONE"]
 
@@ -103,7 +99,7 @@ def tag_language(tokens: List[str]) -> List[str]:
         # is_spelling = classify_if_is_spelling_correct(token)
 
         # combined = np.hstack([embedding, is_ne_onehot])
-        combined = np.hstack([token_embedding, sentence_embedding])
+        combined = np.hstack([token_embedding])
         features.append(combined)
 
     # Stack all token feature vectors
