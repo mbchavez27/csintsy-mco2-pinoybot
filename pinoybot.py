@@ -76,16 +76,23 @@ def tag_language(tokens: List[str]) -> List[str]:
     with open(PCA_PATH, "rb") as f:
         pca = pickle.load(f)
 
-    # Generate embeddings for input tokens
+    # Generate Embeddings
     embedder = SentenceTransformer("all-mpnet-base-v2")
 
-    features = []
+    # Join Sentence Tokens
+    sentence = " ".join(tokens)
+    sentence_embedding = embedder.encode([sentence])[0]
+
+    # Setup Named Entity Categories
     ne_categories = ["ABB", "ABB_EXPR", "ABB_NE", "EXPR", "NE", "NONE"]
 
-    for token in tokens:
-        embedding = embedder.encode([str(token)])[0].reshape(1, -1)
+    features = []
 
-        # classify if token is a Named Entity
+    for token in tokens:
+        # Token embedding
+        token_embedding = embedder.encode([token])[0]
+
+        # Classify if token is a Named Entity
         ne_token = classify_if_is_ne(token)
 
         # Create one-hot encoding for NE feature
@@ -95,7 +102,8 @@ def tag_language(tokens: List[str]) -> List[str]:
 
         # is_spelling = classify_if_is_spelling_correct(token)
 
-        combined = np.hstack([embedding, is_ne_onehot])
+        # combined = np.hstack([embedding, is_ne_onehot])
+        combined = np.hstack([token_embedding, sentence_embedding])
         features.append(combined)
 
     # Stack all token feature vectors

@@ -45,9 +45,11 @@ def train_language_model(data: str = "data/final_annotations.csv"):
 
     print("Splitting dataset...\n")
 
-    # X = np.hstack([np.vstack(language["embeddings"])])
-    # X = np.hstack([np.vstack(language["embeddings"]), is_spelling_correct, is_ne.values])
-    X = np.hstack([np.vstack(language["embeddings"]), is_ne.values])
+    X = np.hstack([np.vstack(language["embeddings"])])
+    # X = np.hstack(
+    #     [np.vstack(language["embeddings"]), is_spelling_correct, is_ne.values]
+    # )
+    # X = np.hstack([np.vstack(language["embeddings"]), is_ne.values])
     y = language["label"]
 
     # 70% train, 15% val, 15% test
