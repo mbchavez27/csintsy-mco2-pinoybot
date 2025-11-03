@@ -37,7 +37,8 @@ def train_language_model(data: str = "data/final_annotations.csv"):
 
     print("Generating embeddings...\n")
     model = SentenceTransformer("all-mpnet-base-v2")
-    language["embeddings"] = list(
+
+    language["word_embeddings"] = list(
         model.encode(
             language["word"].tolist(), convert_to_tensor=False, show_progress_bar=True
         )
@@ -45,7 +46,7 @@ def train_language_model(data: str = "data/final_annotations.csv"):
 
     print("Splitting dataset...\n")
 
-    X = np.hstack([np.vstack(language["embeddings"])])
+    X = np.hstack([np.vstack(language["word_embeddings"])])
     # X = np.hstack(
     #     [np.vstack(language["embeddings"]), is_spelling_correct, is_ne.values]
     # )

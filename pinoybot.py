@@ -70,9 +70,9 @@ def tag_language(tokens: List[str]) -> List[str]:
             f"Model file not found at {MODEL_PATH}. Please train the model first."
         )
 
-    # Load model and PCA
+    # Load Classifier Model and PCA
     with open(MODEL_PATH, "rb") as f:
-        model = pickle.load(f)
+        clf = pickle.load(f)
     with open(PCA_PATH, "rb") as f:
         pca = pickle.load(f)
 
@@ -109,7 +109,7 @@ def tag_language(tokens: List[str]) -> List[str]:
     X = pca.transform(X)
 
     # Predict tags
-    predicted = model.predict(X)
+    predicted = clf.predict(X)
 
     return [str(tag) for tag in predicted]
 
