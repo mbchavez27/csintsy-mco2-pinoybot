@@ -10,8 +10,8 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics import classification_report, accuracy_score
 from tqdm import tqdm
 
-MODEL_PATH = "models/language_rf.pkl"
-PCA_PATH = "models/language_pca.pkl"
+MODEL_PATH = "pickles/language_rf.pkl"
+PCA_PATH = "pickles/language_pca.pkl"
 
 
 def train_language_model(data: str = "data/final_annotations.csv"):
@@ -36,10 +36,10 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     is_ne = pd.get_dummies(language["is_ne"], prefix="is_ne")
 
     print("Generating embeddings...\n")
-    model = SentenceTransformer("all-mpnet-base-v2")
+    mpnet_model = SentenceTransformer("all-mpnet-base-v2")
 
     language["word_embeddings"] = list(
-        model.encode(
+        mpnet_model.encode(
             language["word"].tolist(), convert_to_tensor=False, show_progress_bar=True
         )
     )
@@ -86,6 +86,8 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     print(f"Test Accuracy: {accuracy_score(y_test, y_test_pred):.4f}")
 
     # Save Model and PCA
+    os.makedirs(os.path.dirname(PCA_PATH), exist_ok=True)
+
     with open(PCA_PATH, "wb") as f:
         pickle.dump(pca, f)
 
