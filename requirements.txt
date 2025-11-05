@@ -135,7 +135,7 @@ pytz==2025.2
 pyudev==0.24.3
 pyxdg==0.27
 PyYAML==6.0.1
-pyynl @ file:///builddir/build/BUILD/kernel-6.17.4-build/kernel-6.17.4/linux-6.17.4-100.fc41.x86_64/tools/net/ynl
+# pyynl @ file:///builddir/build/BUILD/kernel-6.17.4-build/kernel-6.17.4/linux-6.17.4-100.fc41.x86_64/tools/net/ynl
 pyzmq==27.0.2
 rapidfuzz==3.5.2
 referencing==0.36.2
@@ -151,10 +151,10 @@ rpm==4.20.1
 ruff==0.14.0
 s3transfer==0.13.1
 selenium==4.35.0
-selinux @ file:///builddir/build/BUILD/libselinux-3.7-build/libselinux-3.7/src
+# selinux @ file:///builddir/build/BUILD/libselinux-3.7-build/libselinux-3.7/src
 Send2Trash==1.8.3
 sentry-sdk==2.17.0
-sepolicy @ file:///builddir/build/BUILD/policycoreutils-3.7-build/selinux-3.7/python/sepolicy
+# sepolicy @ file:///builddir/build/BUILD/policycoreutils-3.7-build/selinux-3.7/python/sepolicy
 setools==4.5.1
 setuptools==69.2.0
 simpleaudio==1.0.4
