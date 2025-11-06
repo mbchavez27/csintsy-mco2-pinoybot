@@ -10,8 +10,8 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics import classification_report, accuracy_score
 from tqdm import tqdm
 
-MODEL_PATH = "pickles/language_rf.pkl"
-PCA_PATH = "pickles/language_pca.pkl"
+MODEL_PATH = "artifacts/language_rf.pkl"
+PCA_PATH = "artifacts/language_pca.pkl"
 
 
 def train_language_model(data: str = "data/final_annotations.csv"):
