@@ -9,9 +9,12 @@ from sklearn.decomposition import PCA
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics import classification_report, accuracy_score
 from tqdm import tqdm
+from ..features.ortographic_features import get_ortographic_features
 
 MODEL_PATH = "artifacts/language_rf.pkl"
 PCA_PATH = "artifacts/language_pca.pkl"
+
+mpnet_model = SentenceTransformer("all-mpnet-base-v2")
 
 
 def train_language_model(data: str = "data/final_annotations.csv"):
@@ -22,35 +25,39 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     print("Loading dataset\n")
     language = pd.read_csv(data)  # loads csv
 
-    language["word"] = language["word"].astype(
-        str
-    )  # converts to string even as numberes
+    # Ensure words are strings
+    language["word"] = language["word"].astype(str)
 
-    print("Getting spelling correctness feature...\n")
-    is_spelling_correct = (
-        language["is_spelling_correct"].astype(int).to_numpy().reshape(-1, 1)
-    )
+    # Generate embeddings for words
+    print(len(language["word"]), " words found.")
 
-    print("Getting is named entity feature...\n")
-    language["is_ne"] = language["is_ne"].fillna("NONE")
-    is_ne = pd.get_dummies(language["is_ne"], prefix="is_ne")
-
-    print("Generating embeddings...\n")
-    mpnet_model = SentenceTransformer("all-mpnet-base-v2")
-
+    print("Getting Word Embedding...")
+    # Generate embeddings for words
     language["word_embeddings"] = list(
         mpnet_model.encode(
             language["word"].tolist(), convert_to_tensor=False, show_progress_bar=True
         )
     )
 
-    print("Splitting dataset...\n")
+    print("Getting spelling correctness feature...\n")
+    spelling_features = (
+        language["is_spelling_correct"].astype(int).to_numpy().reshape(-1, 1)
+    )
 
-    X = np.hstack([np.vstack(language["word_embeddings"])])
-    # X = np.hstack(
-    #     [np.vstack(language["embeddings"]), is_spelling_correct, is_ne.values]
-    # )
-    # X = np.hstack([np.vstack(language["embeddings"]), is_ne.values])
+    print("Getting is named entity feature...\n")
+    language["is_ne"] = language["is_ne"].fillna("NONE")
+    ne_features = pd.get_dummies(language["is_ne"], prefix="is_ne")
+
+    print("Splitting dataset...\n")
+    word_embeddings = np.vstack(language["word_embeddings"])
+
+    ortographic_features = np.vstack(
+        [get_ortographic_features(token) for token in language["word"]]
+    )
+
+    X = np.hstack(
+        [word_embeddings, ortographic_features, ne_features, spelling_features]
+    )
     y = language["label"]
 
     # 70% train, 15% val, 15% test
@@ -61,6 +68,8 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     X_val, X_test, y_val, y_test = train_test_split(
         X_temp, y_temp, test_size=0.50, random_state=42, stratify=y_temp
     )
+
+    print(f"Train: {len(X_train)}, Validation: {len(X_val)}, Test: {len(X_test)}")
 
     print("Apply PCA...\n")
     pca = PCA(n_components=0.95, random_state=42)
