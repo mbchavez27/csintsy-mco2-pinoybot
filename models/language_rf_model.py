@@ -29,7 +29,7 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     language["word"] = language["word"].astype(str)
 
     # Generate embeddings for words
-    print(len(language["word"]), " words found.")
+    print(len(language["word"]), "words found.")
 
     print("Getting Word Embedding...")
     # Generate embeddings for words
@@ -81,6 +81,7 @@ def train_language_model(data: str = "data/final_annotations.csv"):
 
     print("Training Random Forest model...\n")
     clf = RandomForestClassifier(n_estimators=300, random_state=42, verbose=1)
+
     clf.fit(X_train, y_train)
 
     # Evaluate Model
