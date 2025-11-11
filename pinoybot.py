@@ -8,6 +8,7 @@ This module provides the main tagging function for the PinoyBot project, which i
 Model training and feature extraction should be implemented in a separate script. The trained model should be saved and loaded here for prediction.
 """
 
+# Standard Libraries
 import os
 import pickle
 import sys
@@ -17,43 +18,22 @@ import pandas as pd
 from sentence_transformers import SentenceTransformer
 import nltk
 from nltk import word_tokenize
-import spacy
-import re
+
+# Import feature extraction functions
+from features.named_entity import classify_if_is_ne
+from features.spelling import classify_if_is_spelling_correct
+from features.ortographic import get_ortographic_features
 
 
-MODEL_PATH = "models/language_rf.pkl"
-PCA_PATH = "models/language_pca.pkl"
+# Load Classifier Model and PCA
+MODEL_PATH = "artifacts/language_rf.pkl"
+PCA_PATH = "artifacts/language_pca.pkl"
 
+# Load MPNet model for embeddings
+mpnet_model = SentenceTransformer("all-mpnet-base-v2")
 
-name_checker = spacy.load("xx_ent_wiki_sm")
-
-
-def classify_if_is_ne(token: str) -> str:
-    """
-    Classifies if a token is a named entity.
-    Args:
-        token: The word token (string).
-    Returns:
-        "ABB_NE" -> abbreviation named entity
-        "NE" -> named entity
-        "NONE" -> neither
-        "EXPR" -> expression
-    """
-    abbr_pattern = r"^([A-Z0-9]\.?)+$"
-
-    doc = name_checker(token)
-
-    is_ne = bool(doc[0].ent_type_)
-    is_abbr = bool(re.match(abbr_pattern, token))
-
-    if is_ne and is_abbr:
-        return "ABB_NE"
-    elif is_ne:
-        return "NE"
-    elif is_abbr:
-        return "ABB"
-    else:
-        return "NONE"
+# Setup Named Entity Categories
+ne_categories = ["ABB", "ABB_EXPR", "ABB_NE", "EXPR", "NE", "NONE"]
 
 
 # Main tagging function
@@ -65,6 +45,8 @@ def tag_language(tokens: List[str]) -> List[str]:
     Returns:
         tags: List of predicted tags ("ENG", "FIL", or "OTH"), one per token.
     """
+
+    # Check if model files exist
     if not os.path.exists(MODEL_PATH):
         raise FileNotFoundError(
             f"Model file not found at {MODEL_PATH}. Please train the model first."
@@ -76,30 +58,30 @@ def tag_language(tokens: List[str]) -> List[str]:
     with open(PCA_PATH, "rb") as f:
         pca = pickle.load(f)
 
-    # Generate Embeddings
-    embedder = SentenceTransformer("all-mpnet-base-v2")
-
-    # Setup Named Entity Categories
-    ne_categories = ["ABB", "ABB_EXPR", "ABB_NE", "EXPR", "NE", "NONE"]
-
+    # Extract features for each token
     features = []
 
     for token in tokens:
         # Token embedding
-        token_embedding = embedder.encode([token])[0]
+        token_embedding = mpnet_model.encode([token], convert_to_tensor=False)[0]
 
         # Classify if token is a Named Entity
         ne_token = classify_if_is_ne(token)
 
         # Create one-hot encoding for NE feature
-        is_ne_onehot = np.zeros((1, len(ne_categories)))
+        ne_features = np.zeros((1, len(ne_categories)))
         if ne_token in ne_categories:
-            is_ne_onehot[0, ne_categories.index(ne_token)] = 1
+            ne_features[0, ne_categories.index(ne_token)] = 1
 
-        # is_spelling = classify_if_is_spelling_correct(token)
+        # Get Spelling Correctness Feature
+        spelling_features = classify_if_is_spelling_correct(token)
 
-        # combined = np.hstack([embedding, is_ne_onehot])
-        combined = np.hstack([token_embedding])
+        # Get Orthographic Features
+        ortographic_features = np.array(get_ortographic_features(token))
+
+        combined = np.hstack(
+            [token_embedding, ortographic_features, ne_features[0], spelling_features]
+        )
         features.append(combined)
 
     # Stack all token feature vectors
@@ -116,7 +98,7 @@ def tag_language(tokens: List[str]) -> List[str]:
 
 if __name__ == "__main__":
     # Download NLTK resources
-    nltk.download("punkt")
+    nltk.download("punkt", quiet=True)
 
     if len(sys.argv) > 1:
         sentence = sys.argv[1]

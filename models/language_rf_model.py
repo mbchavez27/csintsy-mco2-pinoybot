@@ -9,7 +9,7 @@ from sklearn.decomposition import PCA
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics import classification_report, accuracy_score
 from tqdm import tqdm
-from ..features.ortographic_features import get_ortographic_features
+from features.ortographic import get_ortographic_features
 
 MODEL_PATH = "artifacts/language_rf.pkl"
 PCA_PATH = "artifacts/language_pca.pkl"
