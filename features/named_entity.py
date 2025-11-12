@@ -1,17 +1,17 @@
 import calamancy
+import re
 
 # Load English and Tagalog pipelines
 nlp = calamancy.load("tl_calamancy_md-0.1.0")
 
-abbr_pattern = r"^([A-Z]\.){2,}$|^[A-Z]{2,5}$"
 
-
-def is_abbreviation(token):
-    if token.isupper():
-        if 2 <= len(token) <= 5 and re.match(abbr_pattern, token):
-            return True
-        else:
-            return False
+def is_abbreviation(token: str) -> bool:
+    """Check if a token is likely an abbreviation or acronym."""
+    if re.match(r"^([A-Z]\.){2,}$|^[A-Z]{2,5}$", token):
+        return True
+    # Include common patterns like PhD, BSc, etc.
+    if re.match(r"^[A-Z][a-z]{1,2}$", token) and token.isalpha():
+        return True
     return False
 
 
