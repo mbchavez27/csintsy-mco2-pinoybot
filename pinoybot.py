@@ -26,7 +26,7 @@ from features.ortographic import get_ortographic_features
 
 
 # Load Classifier Model and PCA
-MODEL_PATH = "artifacts/language_rf.pkl"
+MODEL_PATH = "artifacts/language_xgboost.pkl"
 PCA_PATH = "artifacts/language_pca.pkl"
 
 # Load MPNet model for embeddings

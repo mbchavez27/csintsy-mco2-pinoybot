@@ -5,16 +5,19 @@ import pandas as pd
 from typing import List
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
+from xgboost import XGBClassifier
 from sklearn.decomposition import PCA
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics import classification_report, accuracy_score
 from tqdm import tqdm
 from features.ortographic import get_ortographic_features
 
-MODEL_PATH = "artifacts/language_rf.pkl"
+MODEL_PATH = "artifacts/language_xgboost.pkl"
 PCA_PATH = "artifacts/language_pca.pkl"
 
 mpnet_model = SentenceTransformer("all-mpnet-base-v2")
+label_encoder = LabelEncoder()
 
 
 def train_language_model(data: str = "data/final_annotations.csv"):
@@ -58,7 +61,7 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     X = np.hstack(
         [word_embeddings, ortographic_features, ne_features, spelling_features]
     )
-    y = language["label"]
+    y = label_encoder.fit_transform(language["label"])
 
     # 70% train, 15% val, 15% test
     X_train, X_temp, y_train, y_temp = train_test_split(
@@ -80,9 +83,25 @@ def train_language_model(data: str = "data/final_annotations.csv"):
     print(f"PCA retained {np.sum(pca.explained_variance_ratio_):.2%} of variance\n")
 
     # print("Training Random Forest model...\n")
-    clf = RandomForestClassifier(n_estimators=300, random_state=42, verbose=1)
+    # clf = RandomForestClassifier(n_estimators=300, random_state=42, verbose=1)
 
-    clf.fit(X_train, y_train)
+    # clf.fit(X_train, y_train)
+
+    print("Training XGBoost model...\n")
+    clf = XGBClassifier(
+        n_estimators=300,
+        max_depth=8,
+        learning_rate=0.05,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        eval_metric="mlogloss",
+        tree_method="hist",
+        n_jobs=-1,
+        random_state=42,
+        verbosity=1,
+    )
+
+    clf.fit(X_train, y_train, eval_set=[(X_val, y_val)], verbose=True)
 
     # Evaluate Model
     print("Evaluating model...\n")
